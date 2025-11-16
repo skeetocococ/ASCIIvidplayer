@@ -5,6 +5,9 @@
 #include <csignal>
 #include <atomic>
 #include <opencv2/opencv.hpp>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 std::string g_temp_file;
 bool g_is_temp = false;
