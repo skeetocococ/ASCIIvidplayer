@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(AsciiVid)
+project(ASCIIvid)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,4 +18,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     opencv_videoio
     opencv_imgproc
     opencv_imgcodecs
+	  m
 )
