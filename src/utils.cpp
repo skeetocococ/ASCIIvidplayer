@@ -53,11 +53,15 @@ Res fit_to_term(int vid_w, int vid_h, int term_cols, int term_rows)
     return { out_w, out_h };
 }
 
-char pixel_to_char(unsigned char value, const std::string& charset)
+static char pixel_to_char(unsigned char value, const std::string& charset, float gamma)
 {
+    float normalized = value / 255.0f;
+    float corrected = std::pow(normalized, gamma);
+    unsigned char v = static_cast<unsigned char>(corrected * 255);
+
     const int charset_len = charset.size();
-    int index = value * charset_len >> 8;
-    if (index >= charset.size()) index = charset.size() - 1;
+    int index = v * charset_len / 256;
+    if (index >= charset_len) index = charset_len - 1;
     return charset[index];
 }
 
@@ -70,8 +74,15 @@ void render_ascii(const cv::Mat& small, const std::string& charset)
     {
         const unsigned char* row = small.ptr<unsigned char>(y);
         for (int x = 0; x < small.cols; ++x)
-            buffer += pixel_to_char(row[x], charset);
-        buffer += "\033[K\n";
+        {
+            unsigned char v = row[x];
+            char c = pixel_to_char(v, charset, 2.2);
+
+            int color = 232 + v * 23 / 255;
+            buffer += "\033[38;5;" + std::to_string(color) + "m";
+            buffer += c;
+        }
+        buffer += "\033[0m\033[K\n";
     }
     std::cout << buffer;
 }
