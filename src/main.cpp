@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     std::string filepath = argv[1];
     std::string temp_file;
-    std::string ASCIIcharset = ".,:;+*?%S#@";
+    std::string ASCIIcharset = " .`^\",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 
     g_is_temp = handle_url(filepath, temp_file);
     cv::VideoCapture capture(filepath);
