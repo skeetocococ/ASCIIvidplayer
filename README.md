@@ -1,2 +1,18 @@
 # ASCIIvidplayer
 A simple ASCII video player in C++. Can play video files or URLs in the terminal.
+
+For Unix, Windows, Linux. Uses OpenCV.
+
+Usage
+```
+(PROGRAM PATH) <video file or URL> [FPS]
+```
+Target fps are an optional argument. If not passed, it will try to find the video's FPS. Using a URL requires that yt-dlp is installed, it would create a temporary file that is deleted when the program is exited or after playback has finished.
+
+Can be built by executing the following in the src directory:
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
