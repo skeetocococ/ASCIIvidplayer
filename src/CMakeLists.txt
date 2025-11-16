@@ -18,5 +18,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     opencv_videoio
     opencv_imgproc
     opencv_imgcodecs
-	m
+	 m
 )
