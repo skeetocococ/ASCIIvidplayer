@@ -11,7 +11,7 @@
 #endif
 
 void parse_cli(int count, char** args, long& frametime, float& gamma, 
-               std::string& render_mode, double& char_aspect, 
+               std::string& render_mode, std::string& charset, double& char_aspect, 
                double& start, bool& loop)
 {
     for (int i = 2; i < count; ++i) 
@@ -29,6 +29,8 @@ void parse_cli(int count, char** args, long& frametime, float& gamma,
             start = std::stod(args[++i]);
         if (arg == "--loop")
             loop = true;
+        if (arg == "--charset")
+            charset = args[++i];
     }
 }
 
@@ -89,7 +91,7 @@ static char pixel_to_char(unsigned char value, const std::string& charset, float
     return charset[index];
 }
 
-void render_halfblock(const cv::Mat& img)
+static void render_halfblock(const cv::Mat& img)
 {
     std::string out;
     out.reserve((img.cols + 2) * (img.rows/2));
@@ -116,7 +118,7 @@ void render_halfblock(const cv::Mat& img)
     std::cout << out;
 }
 
-void render_ascii(const cv::Mat& small, const std::string& charset, float gamma) 
+static void render_ascii(const cv::Mat& small, const std::string& charset, float gamma) 
 {
     std::string buffer;
     buffer.reserve((small.cols + 2) * small.rows);
@@ -138,12 +140,29 @@ void render_ascii(const cv::Mat& small, const std::string& charset, float gamma)
     std::cout << buffer;
 }
 
+void render(const std::string& render_mode, 
+                 const std::string& charset, 
+                 cv::Mat& small, cv::Mat& frame, 
+                 cv::Mat& gray, Res& out, float& gamma)
+{
+    if (render_mode == "half")
+    {
+        cv::resize(frame, small, cv::Size(out.x, out.y*2), 0, 0, cv::INTER_AREA);
+        render_halfblock(small);
+    }
+    else
+    { 
+        cv::resize(gray, small, cv::Size(out.x, out.y*2), 0, 0, cv::INTER_AREA);
+        render_ascii(small, charset, gamma);
+    }
+}
+
 bool handle_url(std::string& path, std::string& temp_file)
 {
     if (path.compare(0, 7, "http://") == 0 || path.compare(0, 8, "https://") == 0)
     {
         temp_file = "temp_video.mp4";
-        std::string cmd = "yt-dlp -f mp4 \"" + path + "\" -o " + temp_file;
+        std::string cmd = "yt-dlp -f worstvideo \"" + path + "\" -o " + temp_file;
         int ret = std::system(cmd.c_str());
         if (ret != 0)
         {
