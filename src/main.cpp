@@ -1,4 +1,3 @@
-#include "opencv2/imgproc.hpp"
 #include "utils.h"
 #include <string>
 #include <chrono>
