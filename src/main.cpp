@@ -5,9 +5,6 @@
 #include <csignal>
 #include <atomic>
 #include <opencv2/opencv.hpp>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 std::string g_temp_file;
 bool g_is_temp = false;
@@ -15,18 +12,21 @@ std::atomic<bool> g_terminate{false};
 
 void cleanup_signal(int signum) { g_terminate = true; }
 
+#ifdef _WIN32
+#include <windows.h>
+BOOL WINAPI consoleHandler(DWORD signal)
+{
+    if (signal == CTRL_C_EVENT || signal == CTRL_BREAK_EVENT)
+        g_terminate = true;
+    return TRUE;
+}
+#endif
+
 int main(int argc, char** argv)
 {
     std::signal(SIGINT, cleanup_signal);
     std::signal(SIGTERM, cleanup_signal);
-
 #ifdef _WIN32
-    BOOL WINAPI consoleHandler(DWORD signal)
-    {
-        if (signal == CTRL_C_EVENT || signal == CTRL_BREAK_EVENT)
-            g_terminate = true;
-        return TRUE;
-    }
     SetConsoleCtrlHandler(consoleHandler, TRUE);
 #endif
 
