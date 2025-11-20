@@ -162,7 +162,7 @@ bool handle_url(std::string& path, std::string& temp_file)
     if (path.compare(0, 7, "http://") == 0 || path.compare(0, 8, "https://") == 0)
     {
         temp_file = "temp_video.mp4";
-        std::string cmd = "yt-dlp -f worstvideo \"" + path + "\" -o " + temp_file;
+        std::string cmd = "yt-dlp -f worstvideo[ext=mp4]+bestaudio/best[ext=mp4] --merge-output-format mp4 \"" + path + "\" -o " + temp_file;
         int ret = std::system(cmd.c_str());
         if (ret != 0)
         {
