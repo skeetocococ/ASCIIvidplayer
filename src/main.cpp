@@ -39,6 +39,7 @@ int main(int argc, char** argv)
     std::string filepath = argv[1];
     std::string temp_file;
     std::string ASCIIcharset = " .`^\",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    float gamma = 2.2;
 
     g_is_temp = handle_url(filepath, temp_file);
     cv::VideoCapture capture(filepath);
@@ -49,9 +50,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    long frametime = (argc > 2) ?
-        static_cast<long>(1e6 / std::stoi(argv[2])) :
-        static_cast<long>(1e6 / capture.get(cv::CAP_PROP_FPS));
+    long frametime = static_cast<long>(1e6 / capture.get(cv::CAP_PROP_FPS));
+    parse_cli(argc, argv, frametime, gamma);
     if (frametime <= 0) frametime = 33333;
 
     cv::Mat frame, gray, small;
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
         cv::resize(gray, small, cv::Size(out.x, out.y));
 
-        render_ascii(small, ASCIIcharset);
+        render_ascii(small, ASCIIcharset, gamma);
 
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
