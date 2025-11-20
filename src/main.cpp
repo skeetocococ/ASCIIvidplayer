@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <iostream>
 #include <string>
 #include <chrono>
 #include <thread>
@@ -39,7 +40,11 @@ int main(int argc, char** argv)
     std::string filepath = argv[1];
     std::string temp_file;
     std::string ASCIIcharset = " .`^\",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+    std::string render_mode;
     float gamma = 2.2;
+    double aspect = 0.5;
+    double start = 0.0;
+    bool loop;
 
     ::is_temp = handle_url(filepath, temp_file);
     cv::VideoCapture capture(filepath);
@@ -51,8 +56,9 @@ int main(int argc, char** argv)
     }
 
     long frametime = static_cast<long>(1e6 / capture.get(cv::CAP_PROP_FPS));
-    parse_cli(argc, argv, frametime, gamma);
+    parse_cli(argc, argv, frametime, gamma, render_mode, aspect, start, loop);
     if (frametime <= 0) frametime = 33333;
+    if (start > 0) capture.set(cv::CAP_PROP_POS_MSEC, start * 1000);
 
     cv::Mat frame, gray, small;
     while (true) 
@@ -65,11 +71,18 @@ int main(int argc, char** argv)
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
         Res term = get_term_size();
-        Res out  = fit_to_term(frame.cols, frame.rows, term.x, term.y);
+        Res out  = fit_to_term(frame.cols, frame.rows, term.x, term.y, aspect);
 
-        cv::resize(gray, small, cv::Size(out.x, out.y));
-
-        render_ascii(small, ASCIIcharset, gamma);
+        if (render_mode == "half")
+        {
+            cv::resize(frame, small, cv::Size(out.x, out.y*2), 0, 0, cv::INTER_AREA);
+            render_halfblock(small);
+        }
+        else
+        { 
+            cv::resize(gray, small, cv::Size(out.x, out.y*2), 0, 0, cv::INTER_AREA);
+            render_ascii(small, ASCIIcharset, gamma);
+        }
 
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
