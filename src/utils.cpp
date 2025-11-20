@@ -9,6 +9,18 @@
 #include <sys/ioctl.h>
 #endif
 
+void parse_cli(int count, char** args, long& frametime, float& gamma)
+{
+    for (int i = 2; i < count; ++i) 
+    {
+        std::string arg = args[i];
+        if (arg == "--fps" && i+1 < count) 
+            frametime = static_cast<long>(1e6 / std::stoi(args[++i]));
+        else if (arg == "--gamma" && i+1 < count) 
+            gamma = std::stod(args[++i]);
+    }
+}
+
 Res get_term_size() 
 {
     const Res DEFAULT_SIZE{80, 24};
@@ -65,7 +77,7 @@ static char pixel_to_char(unsigned char value, const std::string& charset, float
     return charset[index];
 }
 
-void render_ascii(const cv::Mat& small, const std::string& charset) 
+void render_ascii(const cv::Mat& small, const std::string& charset, float gamma) 
 {
     std::string buffer;
     buffer.reserve((small.cols + 2) * small.rows);
@@ -76,7 +88,7 @@ void render_ascii(const cv::Mat& small, const std::string& charset)
         for (int x = 0; x < small.cols; ++x)
         {
             unsigned char v = row[x];
-            char c = pixel_to_char(v, charset, 2.2);
+            char c = pixel_to_char(v, charset, gamma);
 
             int color = 232 + v * 23 / 255;
             buffer += "\033[38;5;" + std::to_string(color) + "m";
