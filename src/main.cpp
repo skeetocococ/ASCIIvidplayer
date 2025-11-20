@@ -6,18 +6,18 @@
 #include <atomic>
 #include <opencv2/opencv.hpp>
 
-std::string g_temp_file;
-bool g_is_temp = false;
-std::atomic<bool> g_terminate{false};
+std::string temp_file;
+bool is_temp = false;
+std::atomic<bool> terminate{false};
 
-void cleanup_signal(int signum) { g_terminate = true; }
+void cleanup_signal(int signum) { ::terminate = true; }
 
 #ifdef _WIN32
 #include <windows.h>
 BOOL WINAPI consoleHandler(DWORD signal)
 {
     if (signal == CTRL_C_EVENT || signal == CTRL_BREAK_EVENT)
-        g_terminate = true;
+        ::terminate = true;
     return TRUE;
 }
 #endif
@@ -41,12 +41,12 @@ int main(int argc, char** argv)
     std::string ASCIIcharset = " .`^\",:;Il!i~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
     float gamma = 2.2;
 
-    g_is_temp = handle_url(filepath, temp_file);
+    ::is_temp = handle_url(filepath, temp_file);
     cv::VideoCapture capture(filepath);
     if (!capture.isOpened()) 
     {
         std::cerr << "Error: Could not open video.\n";
-        if (g_is_temp) std::remove(temp_file.c_str());
+        if (::is_temp) std::remove(temp_file.c_str());
         return 1;
     }
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     cv::Mat frame, gray, small;
     while (true) 
     {
-        if (g_terminate) break;
+        if (::terminate) break;
         auto start = std::chrono::high_resolution_clock::now();
         capture >> frame;
         if (frame.empty()) break;
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
         if (frametime > elapsed.count())
             std::this_thread::sleep_for(std::chrono::microseconds(frametime - elapsed.count()));
     }
-    if (g_is_temp)
+    if (::is_temp)
     {
         std::remove(temp_file.c_str());
         std::cout << "Temporary file removed.";
